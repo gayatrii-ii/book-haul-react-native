@@ -24,6 +24,7 @@ import LogoutButton from "../../components/LogoutButton";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import Loader from "../../components/Loader";
+import SafeScreen from "../../components/SafeScreen";
 import BubbleBackground from "../../components/BubbleBackground";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
@@ -33,8 +34,17 @@ export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export default function Profile() {
   const router = useRouter();
   const { token, user: authUser } = useAuthStore();
-  const { colors } = useThemeStore();
+  const { colors, fontSizeMode } = useThemeStore();
   const styles = createStyles(colors);
+
+  const getFontSize = (baseSize) => {
+    switch (fontSizeMode) {
+      case "small": return baseSize - 2;
+      case "large": return baseSize + 2;
+      case "extra-large": return baseSize + 4;
+      default: return baseSize;
+    }
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -378,9 +388,9 @@ export default function Profile() {
       <View style={[styles.bookItem, { borderLeftWidth: 5, borderLeftColor: cardBg, backgroundColor: colors.cardBackground }]}>
         <Image source={item.image} style={styles.bookImage} />
         <View style={styles.bookInfo}>
-          <Text style={styles.bookTitle}>{item.title}</Text>
+          <Text style={[styles.bookTitle, { fontSize: getFontSize(16) }]}>{item.title}</Text>
           <View style={styles.ratingContainer}>{renderRatingStars(item.rating)}</View>
-          <Text style={styles.bookCaption} numberOfLines={2}>
+          <Text style={[styles.bookCaption, { fontSize: getFontSize(14) }]} numberOfLines={2}>
             {item.caption}
           </Text>
           <Text style={styles.bookDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
@@ -416,9 +426,10 @@ export default function Profile() {
   if (isLoading && !refreshing) return <Loader />;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }} {...panResponder.panHandlers}>
-      <BubbleBackground />
-      <View style={[styles.container, { backgroundColor: "transparent" }]}>
+    <SafeScreen>
+      <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+        <BubbleBackground />
+        <View style={[styles.container, { backgroundColor: "transparent" }]}>
         
         <FlatList
           data={books}
@@ -444,7 +455,7 @@ export default function Profile() {
               <View style={styles.goalCard}>
                 <View style={styles.goalHeader}>
                   <Ionicons name="trophy-outline" size={20} color={colors.primary} />
-                  <Text style={styles.goalTitle}>Yearly Challenge Goal</Text>
+                  <Text style={[styles.goalTitle, { fontSize: getFontSize(13) }]}>Yearly Challenge Goal</Text>
                 </View>
 
                 {isEditingGoal ? (
@@ -469,12 +480,12 @@ export default function Profile() {
                   </View>
                 ) : (
                   <View style={styles.goalDisplayRow}>
-                    <Text style={styles.goalDisplayText}>
-                      Targeting <Text style={styles.goalHighlight}>{readingGoal}</Text> books in 2026
+                    <Text style={[styles.goalDisplayText, { fontSize: getFontSize(14) }]}>
+                      Targeting <Text style={[styles.goalHighlight, { fontSize: getFontSize(18) }]}>{readingGoal}</Text> books in 2026
                     </Text>
                     <TouchableOpacity style={styles.goalEditBtn} onPress={() => setIsEditingGoal(true)}>
                       <Ionicons name="create-outline" size={16} color={colors.primary} />
-                      <Text style={styles.goalEditText}>Edit</Text>
+                      <Text style={[styles.goalEditText, { fontSize: getFontSize(12) }]}>Edit</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -483,7 +494,7 @@ export default function Profile() {
               {/* MY READING CIRCLES BOARD */}
               <View style={styles.circlesSection}>
                 <View style={styles.circlesHeaderRow}>
-                  <Text style={styles.sectionHeaderTitle}>My Discussion Circles 💬</Text>
+                  <Text style={[styles.sectionHeaderTitle, { fontSize: getFontSize(14) }]}>My Discussion Circles 💬</Text>
                   <TouchableOpacity style={styles.launchCircleBtn} onPress={() => setIsCreateModalVisible(true)}>
                     <Ionicons name="add" size={14} color={colors.white} />
                     <Text style={styles.launchCircleText}>Launch</Text>
@@ -500,8 +511,8 @@ export default function Profile() {
                       onPress={() => router.push("/circles")}
                     >
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.circleItemName}>{circle.name}</Text>
-                        <Text style={styles.circleItemDesc} numberOfLines={1}>{circle.description}</Text>
+                        <Text style={[styles.circleItemName, { fontSize: getFontSize(13) }]}>{circle.name}</Text>
+                        <Text style={[styles.circleItemDesc, { fontSize: getFontSize(11) }]} numberOfLines={1}>{circle.description}</Text>
                       </View>
                       <View style={styles.circleItemBadge}>
                         <Ionicons name="people" size={12} color={colors.textPrimary} />
@@ -517,7 +528,7 @@ export default function Profile() {
 
               {/* Book recommendations titles */}
               <View style={styles.booksHeader}>
-                <Text style={styles.booksTitle}>Your Recommendations 📚</Text>
+                <Text style={[styles.booksTitle, { fontSize: getFontSize(18) }]}>Your Recommendations 📚</Text>
                 <Text style={styles.booksCount}>{books.length} books</Text>
               </View>
             </View>
@@ -525,7 +536,7 @@ export default function Profile() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="book-outline" size={50} color={colors.textSecondary} />
-              <Text style={styles.emptyText}>No recommendations yet</Text>
+              <Text style={[styles.emptyText, { fontSize: getFontSize(16) }]}>No recommendations yet</Text>
               <TouchableOpacity style={styles.addButton} onPress={() => router.push("/create")}>
                 <Text style={styles.addButtonText}>Add Your First Book</Text>
               </TouchableOpacity>
@@ -683,6 +694,7 @@ export default function Profile() {
         </View>
       </Modal>
 
-    </View>
+      </View>
+    </SafeScreen>
   );
 }

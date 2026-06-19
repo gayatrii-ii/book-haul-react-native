@@ -8,10 +8,19 @@ import { useThemeStore } from "../store/themeStore";
 
 export default function ProfileHeader({ onEditAvatar, onEditBio }) {
   const { user } = useAuthStore();
-  const { colors } = useThemeStore();
+  const { colors, fontSizeMode } = useThemeStore();
   const styles = createStyles(colors);
 
   if (!user) return null;
+
+  const getFontSize = (baseSize) => {
+    switch (fontSizeMode) {
+      case "small": return baseSize - 2;
+      case "large": return baseSize + 2;
+      case "extra-large": return baseSize + 4;
+      default: return baseSize;
+    }
+  };
 
   return (
     <View style={[styles.profileHeader, { flexDirection: "column", alignItems: "stretch" }]}>
@@ -36,22 +45,22 @@ export default function ProfileHeader({ onEditAvatar, onEditBio }) {
         </TouchableOpacity>
 
         <View style={styles.profileInfo}>
-          <Text style={styles.username}>{user.username}</Text>
-          <Text style={styles.email}>{user.email}</Text>
-          <Text style={styles.memberSince}>🗓️ Joined {formatMemberSince(user.createdAt)}</Text>
+          <Text style={[styles.username, { fontSize: getFontSize(20) }]}>{user.username}</Text>
+          <Text style={[styles.email, { fontSize: getFontSize(14) }]}>{user.email}</Text>
+          <Text style={[styles.memberSince, { fontSize: getFontSize(12) }]}>🗓️ Joined {formatMemberSince(user.createdAt)}</Text>
         </View>
       </View>
 
       {/* Bio section */}
       <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textPrimary }}>Bio</Text>
+          <Text style={{ fontSize: getFontSize(13), fontWeight: "600", color: colors.textPrimary }}>Bio</Text>
           <TouchableOpacity onPress={onEditBio} style={{ flexDirection: "row", alignItems: "center", padding: 2 }}>
             <Ionicons name="create-outline" size={14} color={colors.primary} />
-            <Text style={{ fontSize: 12, color: colors.primary, marginLeft: 2 }}>Edit</Text>
+            <Text style={{ fontSize: getFontSize(12), color: colors.primary, marginLeft: 2 }}>Edit</Text>
           </TouchableOpacity>
         </View>
-        <Text style={{ fontSize: 13, color: colors.textDark, marginTop: 4, fontStyle: user.bio ? "normal" : "italic", lineHeight: 18 }}>
+        <Text style={{ fontSize: getFontSize(13), color: colors.textDark, marginTop: 4, fontStyle: user.bio ? "normal" : "italic", lineHeight: 18 }}>
           {user.bio || "No bio added yet. Tap Edit to add your bio!"}
         </Text>
       </View>

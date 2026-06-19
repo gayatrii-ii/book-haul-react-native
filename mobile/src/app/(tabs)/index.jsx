@@ -663,9 +663,15 @@ export default function Home() {
             </View>
 
             {/* Welcome banner text */}
-            <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeText}>Welcome back, {dbUser?.username || "gayatri"}!</Text>
-              <Text style={styles.subtext}>Discover great reads from the community 🔍</Text>
+            <View style={[styles.welcomeContainer, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.welcomeText}>Welcome back, {dbUser?.username || "gayatri"}!</Text>
+                <Text style={styles.subtext}>Discover great reads from the community 🔍</Text>
+              </View>
+              <Image 
+                source={require("../../assets/images/book-haul-logo.png")} 
+                style={{ width: 44, height: 44, borderRadius: 10, marginLeft: 12 }} 
+              />
             </View>
 
             {/* Now Reading playback widget */}
