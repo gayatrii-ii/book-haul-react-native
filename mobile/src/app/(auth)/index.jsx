@@ -10,18 +10,21 @@ import {
   Alert,
 } from "react-native";
 import { Link } from "expo-router";
-import styles from "../../assets/styles/login.styles";
+import createStyles from "../../assets/styles/login.styles";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../constants/colors";
 
 import { useAuthStore } from "../../store/authStore";
+import { useThemeStore } from "../../store/themeStore";
+import BubbleBackground from "../../components/BubbleBackground";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { isLoading, login, isCheckingAuth } = useAuthStore();
+  const { colors } = useThemeStore();
+  const styles = createStyles(colors);
 
   const handleLogin = async () => {
     const result = await login(email, password);
@@ -32,19 +35,22 @@ export default function Login() {
   if (isCheckingAuth) return null;
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View style={styles.container}>
-        {/* ILLUSTRATION */}
-        <View style={styles.topIllustration}>
-          <Image
-            source={require("../../assets/images/i.png")}
-            style={styles.illustrationImage}
-            resizeMode="contain"
-          />
-        </View>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <BubbleBackground />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={[styles.container, { backgroundColor: "transparent" }]}>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <Image 
+              source={require("../../assets/images/book-haul-logo.png")} 
+              style={{ width: 80, height: 80, borderRadius: 16, marginBottom: 12, resizeMode: "contain" }} 
+            />
+            <Text style={styles.title}>BookHaul</Text>
+            <Text style={styles.subtitle}>Log in to share your favorite reads</Text>
+          </View>
 
         <View style={styles.card}>
           <View style={styles.formContainer}>
@@ -55,13 +61,13 @@ export default function Login() {
                 <Ionicons
                   name="mail-outline"
                   size={20}
-                  color={COLORS.primary}
+                  color={colors.primary}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your email"
-                  placeholderTextColor={COLORS.placeholderText}
+                  placeholderTextColor={colors.placeholderText}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -78,14 +84,14 @@ export default function Login() {
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color={COLORS.primary}
+                  color={colors.primary}
                   style={styles.inputIcon}
                 />
                 {/* INPUT */}
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your password"
-                  placeholderTextColor={COLORS.placeholderText}
+                  placeholderTextColor={colors.placeholderText}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
@@ -98,7 +104,7 @@ export default function Login() {
                   <Ionicons
                     name={showPassword ? "eye-outline" : "eye-off-outline"}
                     size={20}
-                    color={COLORS.primary}
+                    color={colors.primary}
                   />
                 </TouchableOpacity>
               </View>
@@ -125,5 +131,6 @@ export default function Login() {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </View>
   );
 }

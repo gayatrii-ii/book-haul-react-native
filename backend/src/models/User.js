@@ -22,6 +22,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    readingGoal: {
+      type: Number,
+      default: 24,
+    },
+    membershipTier: {
+      type: String,
+      enum: ["Premium Member", "Standard Member"],
+      default: "Premium Member",
+    },
+    bio: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

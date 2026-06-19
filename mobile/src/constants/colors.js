@@ -1,14 +1,15 @@
-// FOREST
+// Editorial Burgundy-style warm theme (burgundy primary, desaturated charcoal text, warm off-white background)
 const COLORS = {
-  primary: "#4CAF50",
-  textPrimary: "#2e5a2e",
-  textSecondary: "#688f68",
-  textDark: "#1b361b",
-  placeholderText: "#767676",
-  background: "#e8f5e9",
-  cardBackground: "#f1f8f2",
-  inputBackground: "#f4faf5",
-  border: "#c8e6c9",
+  primary: "#802B37", // Elegant deep wine burgundy red
+  accent: "#C88B8F", // Sophisticated dusty rose accent
+  textPrimary: "#1A1A1A", // deep charcoal graphite
+  textSecondary: "#6C6C7E", // desaturated slate-grey
+  textDark: "#181822", // near-black charcoal
+  placeholderText: "#A5A5B6",
+  background: "#FCFAF7", // warm desaturated linen off-white
+  cardBackground: "#FFFFFF", // clean solid white
+  inputBackground: "#F5F3F0", // desaturated warm cream-grey
+  border: "#EAE6DF", // very thin warm desaturated grey border
   white: "#ffffff",
   black: "#000000",
 };

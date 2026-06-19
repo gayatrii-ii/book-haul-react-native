@@ -8,12 +8,13 @@ This repository is structured as a **monorepo** containing both the backend REST
 
 ## 🚀 Features
 
-*   **User Authentication**: Secure signup and login with JWT and password hashing.
-*   **Book Sharing**: Share book listings with titles, descriptions, ratings, and covers.
-*   **Community Feed**: Discover great reads recommended by other members of the community.
+*   **User Authentication & Branding**: Secure signup and login with JWT and password hashing, featuring the official BookHaul brand logo integrated across the Login, Signup, and Sidebar headers.
+*   **Minimalist Kindle/Medium Editorial Look**: Fully revamped layout with professional desaturated warm cream (Light) and indigo-charcoal (Dark) palettes, clean cards, and subtle accent stripes.
+*   **Dynamic Theme & Font Settings**: Settings panel in the sidebar drawer to toggle Light/Dark appearance, scale reading font sizes (Small, Normal, Large, Extra-Large) on feed and chat rooms, and sync yearly goals.
+*   **Advanced Review Customization**: Add ratings, captions, book covers, and custom options (Favorite Heart ❤️, Re-Read 🔄, E-Book/Audiobook formats, and comma-separated hashtags).
+*   **Reading Circles & Spoiler Shield**: Interactive reading groups with discussions that blur/lock messages marked as spoilers until a member's personal library page progress reaches the target page.
 *   **Image Uploads**: Integrated with Cloudinary for fast and optimized cover image hosting.
-*   **Offline Support**: Session state and tokens persisted locally using AsyncStorage.
-*   **Clean & Responsive UI**: Built with modern typography, smooth loading states, and modern layouts.
+*   **Offline Support**: Session state, user settings, and tokens persisted locally using AsyncStorage.
 
 ---
 

@@ -25,6 +25,26 @@ const bookSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    likes: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      default: [],
+    },
+    isFavorite: {
+      type: Boolean,
+      default: false,
+    },
+    isReread: {
+      type: Boolean,
+      default: false,
+    },
+    format: {
+      type: String,
+      default: "Physical Book",
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

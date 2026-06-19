@@ -7,13 +7,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
-import styles from "../../assets/styles/signup.styles";
+import createStyles from "../../assets/styles/signup.styles";
 import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../constants/colors";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../../store/authStore";
+import { useThemeStore } from "../../store/themeStore";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -22,6 +23,8 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
 
   const { user, isLoading, register, token } = useAuthStore();
+  const { colors } = useThemeStore();
+  const styles = createStyles(colors);
 
   const router = useRouter();
 
@@ -40,7 +43,11 @@ export default function Signup() {
         <View style={styles.card}>
           {/* HEADER */}
           <View style={styles.header}>
-            <Text style={styles.title}>BookHaul 📚</Text>
+            <Image 
+              source={require("../../assets/images/book-haul-logo.png")} 
+              style={{ width: 80, height: 80, borderRadius: 16, marginBottom: 12, resizeMode: "contain", alignSelf: "center" }} 
+            />
+            <Text style={styles.title}>BookHaul</Text>
             <Text style={styles.subtitle}>Share your favorite reads</Text>
           </View>
 
@@ -52,13 +59,13 @@ export default function Signup() {
                 <Ionicons
                   name="person-outline"
                   size={20}
-                  color={COLORS.primary}
+                  color={colors.primary}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="johndoe"
-                  placeholderTextColor={COLORS.placeholderText}
+                  placeholderTextColor={colors.placeholderText}
                   value={username}
                   onChangeText={setUsername}
                   autoCapitalize="none"
@@ -73,14 +80,14 @@ export default function Signup() {
                 <Ionicons
                   name="mail-outline"
                   size={20}
-                  color={COLORS.primary}
+                  color={colors.primary}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="johndoe@gmail.com"
                   value={email}
-                  placeholderTextColor={COLORS.placeholderText}
+                  placeholderTextColor={colors.placeholderText}
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -95,13 +102,13 @@ export default function Signup() {
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color={COLORS.primary}
+                  color={colors.primary}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="******"
-                  placeholderTextColor={COLORS.placeholderText}
+                  placeholderTextColor={colors.placeholderText}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
@@ -113,7 +120,7 @@ export default function Signup() {
                   <Ionicons
                     name={showPassword ? "eye-outline" : "eye-off-outline"}
                     size={20}
-                    color={COLORS.primary}
+                    color={colors.primary}
                   />
                 </TouchableOpacity>
               </View>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,14 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  PanResponder,
 } from "react-native";
 import { useRouter } from "expo-router";
-import styles from "../../assets/styles/create.styles";
+import createStyles from "../../assets/styles/create.styles";
 import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../constants/colors";
 import { useAuthStore } from "../../store/authStore";
+import { useThemeStore } from "../../store/themeStore";
+import BubbleBackground from "../../components/BubbleBackground";
 
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
@@ -27,10 +29,33 @@ export default function Create() {
   const [rating, setRating] = useState(3);
   const [image, setImage] = useState(null); // to display the selected image
   const [imageBase64, setImageBase64] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isReread, setIsReread] = useState(false);
+  const [format, setFormat] = useState("Physical Book");
+  const [tagsInput, setTagsInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
   const { token } = useAuthStore();
+  const { colors } = useThemeStore();
+  const styles = createStyles(colors);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.5;
+        return isHorizontal && Math.abs(gestureState.dx) > 15;
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dx < -100 || gestureState.vx < -0.4) {
+          router.push("/profile");
+        } else if (gestureState.dx > 100 || gestureState.vx > 0.4) {
+          router.push("/");
+        }
+      },
+    })
+  ).current;
 
   console.log(token);
 
@@ -93,6 +118,10 @@ export default function Create() {
 
       const imageDataUrl = `data:${imageType};base64,${imageBase64}`;
 
+      const tags = tagsInput
+        ? tagsInput.split(",").map((t) => t.trim()).filter((t) => t.length > 0)
+        : [];
+
       const response = await fetch(`${API_URL}/books`, {
         method: "POST",
         headers: {
@@ -104,6 +133,10 @@ export default function Create() {
           caption,
           rating: rating.toString(),
           image: imageDataUrl,
+          isFavorite,
+          isReread,
+          format,
+          tags,
         }),
       });
 
@@ -116,6 +149,10 @@ export default function Create() {
       setRating(3);
       setImage(null);
       setImageBase64(null);
+      setIsFavorite(false);
+      setIsReread(false);
+      setFormat("Physical Book");
+      setTagsInput("");
       router.push("/");
     } catch (error) {
       console.error("Error creating post:", error);
@@ -133,7 +170,7 @@ export default function Create() {
           <Ionicons
             name={i <= rating ? "star" : "star-outline"}
             size={32}
-            color={i <= rating ? "#f4b400" : COLORS.textSecondary}
+            color={i <= rating ? colors.accent : colors.textSecondary}
           />
         </TouchableOpacity>
       );
@@ -142,12 +179,17 @@ export default function Create() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView contentContainerStyle={styles.container} style={styles.scrollViewStyle}>
-        <View style={styles.card}>
+    <View style={{ flex: 1, backgroundColor: colors.background }} {...panResponder.panHandlers}>
+      <BubbleBackground />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView 
+          contentContainerStyle={[styles.container, { backgroundColor: "transparent" }]} 
+          style={[styles.scrollViewStyle, { backgroundColor: "transparent" }]}
+        >
+          <View style={styles.card}>
           {/* HEADER */}
           <View style={styles.header}>
             <Text style={styles.title}>Add Book Recommendation</Text>
@@ -162,13 +204,13 @@ export default function Create() {
                 <Ionicons
                   name="book-outline"
                   size={20}
-                  color={COLORS.textSecondary}
+                  color={colors.textSecondary}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="Enter book title"
-                  placeholderTextColor={COLORS.placeholderText}
+                  placeholderTextColor={colors.placeholderText}
                   value={title}
                   onChangeText={setTitle}
                 />
@@ -189,11 +231,80 @@ export default function Create() {
                   <Image source={{ uri: image }} style={styles.previewImage} />
                 ) : (
                   <View style={styles.placeholderContainer}>
-                    <Ionicons name="image-outline" size={40} color={COLORS.textSecondary} />
+                    <Ionicons name="image-outline" size={40} color={colors.textSecondary} />
                     <Text style={styles.placeholderText}>Tap to select image</Text>
                   </View>
                 )}
               </TouchableOpacity>
+            </View>
+
+            {/* REVIEW DETAILS (Favorite, Re-read) */}
+            <View style={styles.toggleRow}>
+              <TouchableOpacity
+                style={[styles.toggleBtn, isFavorite && styles.toggleBtnActive]}
+                onPress={() => setIsFavorite(!isFavorite)}
+              >
+                <Ionicons
+                  name={isFavorite ? "heart" : "heart-outline"}
+                  size={20}
+                  color={isFavorite ? colors.primary : colors.textSecondary}
+                />
+                <Text style={[styles.toggleBtnText, isFavorite && styles.toggleBtnTextActive]}>
+                  Favorite
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.toggleBtn, isReread && styles.toggleBtnActive]}
+                onPress={() => setIsReread(!isReread)}
+              >
+                <Ionicons
+                  name={isReread ? "repeat" : "repeat-outline"}
+                  size={20}
+                  color={isReread ? colors.primary : colors.textSecondary}
+                />
+                <Text style={[styles.toggleBtnText, isReread && styles.toggleBtnTextActive]}>
+                  Re-read
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* FORMAT READ */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Reading Format</Text>
+              <View style={styles.formatRow}>
+                {["Physical Book", "E-Book", "Audiobook"].map((fmt) => (
+                  <TouchableOpacity
+                    key={fmt}
+                    style={[styles.formatBtn, format === fmt && styles.formatBtnActive]}
+                    onPress={() => setFormat(fmt)}
+                  >
+                    <Text style={[styles.formatBtnText, format === fmt && styles.formatBtnTextActive]}>
+                      {fmt}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* TAGS INPUT */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Tags (comma separated)</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons
+                  name="pricetags-outline"
+                  size={20}
+                  color={colors.textSecondary}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g. fantasy, romance, thriller"
+                  placeholderTextColor={colors.placeholderText}
+                  value={tagsInput}
+                  onChangeText={setTagsInput}
+                />
+              </View>
             </View>
 
             {/* CAPTION */}
@@ -202,7 +313,7 @@ export default function Create() {
               <TextInput
                 style={styles.textArea}
                 placeholder="Write your review or thoughts about this book..."
-                placeholderTextColor={COLORS.placeholderText}
+                placeholderTextColor={colors.placeholderText}
                 value={caption}
                 onChangeText={setCaption}
                 multiline
@@ -211,13 +322,13 @@ export default function Create() {
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
               {loading ? (
-                <ActivityIndicator color={COLORS.white} />
+                <ActivityIndicator color={colors.white} />
               ) : (
                 <>
                   <Ionicons
                     name="cloud-upload-outline"
                     size={20}
-                    color={COLORS.white}
+                    color={colors.white}
                     style={styles.buttonIcon}
                   />
                   <Text style={styles.buttonText}>Share</Text>
@@ -227,6 +338,7 @@ export default function Create() {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }

@@ -1,13 +1,14 @@
 import express from "express";
 import cloudinary from "../lib/cloudinary.js";
 import Book from "../models/Book.js";
+import Comment from "../models/Comment.js";
 import protectRoute from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
 router.post("/", protectRoute, async (req, res) => {
   try {
-    const { title, caption, rating, image } = req.body;
+    const { title, caption, rating, image, isFavorite, isReread, format, tags } = req.body;
 
     if (!image || !title || !caption || !rating) {
       return res.status(400).json({ message: "Please provide all fields" });
@@ -44,6 +45,10 @@ router.post("/", protectRoute, async (req, res) => {
       rating,
       image: imageUrl,
       user: req.user._id,
+      isFavorite: isFavorite || false,
+      isReread: isReread || false,
+      format: format || "Physical Book",
+      tags: tags || [],
     });
 
     await newBook.save();
@@ -72,8 +77,23 @@ router.get("/", protectRoute, async (req, res) => {
 
     const totalBooks = await Book.countDocuments();
 
+    const booksWithCommentsCount = await Promise.all(
+      books.map(async (book) => {
+        const commentsCount = await Comment.countDocuments({ book: book._id });
+        const userIdStr = req.user._id.toString();
+        const isLikedByMe = book.likes ? book.likes.some((id) => id.toString() === userIdStr) : false;
+        const likesCount = book.likes ? book.likes.length : 0;
+        return {
+          ...book.toObject(),
+          commentsCount,
+          isLikedByMe,
+          likesCount,
+        };
+      })
+    );
+
     res.send({
-      books,
+      books: booksWithCommentsCount,
       currentPage: page,
       totalBooks,
       totalPages: Math.ceil(totalBooks / limit),
@@ -121,6 +141,84 @@ router.delete("/:id", protectRoute, async (req, res) => {
   } catch (error) {
     console.log("Error deleting book", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Get comments for a book
+router.get("/:id/comments", protectRoute, async (req, res) => {
+  try {
+    const comments = await Comment.find({ book: req.params.id })
+      .sort({ createdAt: 1 })
+      .populate("user", "username profileImage");
+    res.json(comments);
+  } catch (error) {
+    console.log("Error fetching comments", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Add comment to a book
+router.post("/:id/comments", protectRoute, async (req, res) => {
+  try {
+    const { content } = req.body;
+    if (!content) {
+      return res.status(400).json({ message: "Comment content is required" });
+    }
+
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    const newComment = new Comment({
+      content,
+      user: req.user._id,
+      book: req.params.id,
+    });
+
+    await newComment.save();
+    await newComment.populate("user", "username profileImage");
+
+    res.status(201).json(newComment);
+  } catch (error) {
+    console.log("Error creating comment", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Toggle like on a book
+router.post("/:id/like", protectRoute, async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    const userIdStr = req.user._id.toString();
+    if (!book.likes) {
+      book.likes = [];
+    }
+
+    const index = book.likes.findIndex((id) => id.toString() === userIdStr);
+    let isLikedByMe = false;
+
+    if (index === -1) {
+      book.likes.push(req.user._id);
+      isLikedByMe = true;
+    } else {
+      book.likes.splice(index, 1);
+      isLikedByMe = false;
+    }
+
+    await book.save();
+
+    res.json({
+      isLikedByMe,
+      likesCount: book.likes.length,
+    });
+  } catch (error) {
+    console.log("Error toggling like", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
