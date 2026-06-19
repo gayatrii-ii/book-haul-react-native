@@ -58,7 +58,7 @@ router.post("/:id/join", protectRoute, async (req, res) => {
       return res.status(404).json({ message: "Circle not found" });
     }
 
-    if (circle.members.includes(req.user._id)) {
+    if (circle.members.some(id => id.toString() === req.user._id.toString())) {
       return res.status(400).json({ message: "You are already a member of this circle" });
     }
 
