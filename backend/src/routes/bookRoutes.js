@@ -13,11 +13,26 @@ router.post("/", protectRoute, async (req, res) => {
       return res.status(400).json({ message: "Please provide all fields" });
     }
 
-    // upload the image to cloudinary, falling back to a placeholder if it fails
+    // upload the image to cloudinary using unsigned preset, falling back to a placeholder if it fails
     let imageUrl = "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=1000";
     try {
-      const uploadResponse = await cloudinary.uploader.upload(image);
-      imageUrl = uploadResponse.secure_url;
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`;
+      const response = await fetch(cloudinaryUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          file: image,
+          upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET || "bookhaul",
+        }),
+      });
+
+      const uploadData = await response.json();
+      if (!response.ok) {
+        throw new Error(uploadData.error?.message || "Unsigned upload failed");
+      }
+      imageUrl = uploadData.secure_url;
     } catch (uploadError) {
       console.warn("Cloudinary upload failed, using fallback placeholder image. Error:", uploadError.message);
     }
