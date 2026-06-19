@@ -13,9 +13,14 @@ router.post("/", protectRoute, async (req, res) => {
       return res.status(400).json({ message: "Please provide all fields" });
     }
 
-    // upload the image to cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(image);
-    const imageUrl = uploadResponse.secure_url;
+    // upload the image to cloudinary, falling back to a placeholder if it fails
+    let imageUrl = "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=1000";
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(image);
+      imageUrl = uploadResponse.secure_url;
+    } catch (uploadError) {
+      console.warn("Cloudinary upload failed, using fallback placeholder image. Error:", uploadError.message);
+    }
 
     // save to the database
     const newBook = new Book({
